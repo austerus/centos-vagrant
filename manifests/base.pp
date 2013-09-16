@@ -15,10 +15,20 @@ class { 'epel': }
 class { "memcached": memcached_port => '11211', maxconn => '2048', cachesize => '12', }
 
 # Miscellaneous packages.
-$misc_packages = ['vim-enhanced','telnet','zip','unzip','git','nodejs','npm','upstart']
+$misc_packages = ['vim-enhanced','telnet','zip','unzip','git','upstart']
 package { $misc_packages: ensure => latest }
 class { "ntp": autoupdate => true }
 class { 'htop': }
+
+#include nodejs
+class { 'nodejs': } -> package { 'serve': ensure => present, provider => 'npm', }
+
+exec { 'npm_firewall':
+    command => "npm config set strict-ssl false",
+    path => $::path,
+    require => Package['npm'],
+}
+
 
 # Iptables (Firewall) package and rules to allow ssh, http, https and dns services.
 class iptables {
@@ -136,6 +146,19 @@ postgresql::pg_hba_rule { 'Allow application network to access app database':
   address => '127.0.0.1/32',
   auth_method => 'md5',
 }
+postgresql::pg_hba_rule { 'Allow client network to access app database':
+  description => "Open up postgresql for access from client",
+  type => 'host',
+  database => 'all',
+  user => 'all',
+  address => '192.168.33.0/24',
+  auth_method => 'md5',
+}
+
+postgresql::db { 'praxis':
+  user     => 'praxis',
+  password => 'praxis',
+}
 
 $additional_mysql_packages = [ "mysql-devel", "mysql-libs" ]
 package { $additional_mysql_packages: ensure => present }
@@ -150,15 +173,16 @@ php::ini {
 }
 include php::cli
 include php::mod_php5
-php::module { [ 'devel', 'pear', 'mysql', 'pgsql', 'mbstring', 'xml', 'gd', 'tidy', 'pecl-apc', 'pecl-memcache', 'pecl-imagick', 'pecl-xdebug']: }
+php::module { [ 'devel', 'pear', 'mysql', 'pgsql', 'mbstring', 'xml', 'intl', 'gd', 'tidy', 'pecl-apc', 'pecl-memcache', 'pecl-imagick', 'pecl-xdebug']: }
 php::zend::ini { 'pecl-xdebug':
     settings => {
-        'xdebug.remote_enable'      => 'on',
-        'xdebug.remote_handler' => 'dbgp',
-        'xdebug.remote_port'     => '9000',
-        'xdebug.remote_port'     => '9000',
-        'xdebug.remote_connect_back'     => 'on',
-		'xdebug.max_nesting_level'     => '250',
+        'xdebug.remote_enable'      	=> 'on',
+        'xdebug.remote_handler' 	=> 'dbgp',
+        'xdebug.remote_port'     	=> '9000',
+        'xdebug.remote_host'		=> '192.168.33.1',
+        'xdebug.remote_connect_back'	=> 'on',
+	'xdebug.max_nesting_level'	=> '250',
+	'xdebug.idekey'			=> 'PHPSTORM',
     },
     module_path => '/usr/lib64/php/modules/xdebug.so'
 }
@@ -229,3 +253,15 @@ exec { '/usr/bin/npm i -g nodemon':
     timeout => 0,
     user => 'root',
 }
+
+package { 'uglify-js':
+  ensure   => present,
+  provider => 'npm',
+}
+
+package { 'uglifycss':
+  ensure   => present,
+  provider => 'npm',
+}
+
+include composer
