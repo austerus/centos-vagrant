@@ -31,3 +31,6 @@
 [submodule "modules/wget"]
 	path = modules/wget
 	url = git://github.com/maestrodev/puppet-wget.git
+[submodule "modules/apache"]
+	path = modules/apache
+	url = https://github.com/puppetlabs/puppetlabs-apache
