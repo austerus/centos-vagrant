@@ -19,9 +19,15 @@
 [submodule "modules/epel"]
 	path = modules/epel
 	url = https://github.com/stahnma/puppet-module-epel
-[submodule "modules/apache"]
-	path = modules/apache
-	url = https://github.com/obokaman-com/puppetlabs-apache.git
 [submodule "modules/sphinx"]
 	path = modules/sphinx
 	url = git://github.com/vurbia/puppet-sphinx.git
+[submodule "modules/nodejs"]
+        path = modules/nodejs
+        url = git://github.com/puppetlabs/puppetlabs-nodejs.git
+[submodule "modules/composer"]
+	path = modules/composer
+	url = git://github.com/willdurand/puppet-composer.git
+[submodule "modules/wget"]
+	path = modules/wget
+	url = git://github.com/maestrodev/puppet-wget.git
